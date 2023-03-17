@@ -53,6 +53,8 @@ spec:
       - name: plex
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          privileged: true
 {{- if .Values.kubePlex.enabled }}
         # We replace the PMS binary with a postStart hook to save having to
         # modify the default image entrypoint.
@@ -144,6 +146,9 @@ spec:
         {{- end }}
         - name: shared
           mountPath: /shared
+        - name: devfs
+          mountPath: /dev/dri
+          readOnly: true
         resources:
 {{ toYaml .Values.resources | indent 10 }}
     {{- if .Values.nodeSelector }}
@@ -187,6 +192,9 @@ spec:
 {{- end }}
       - name: shared
         emptyDir: {}
+      - name: devfs
+        hostPath:
+          path: /dev/dri
     {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
